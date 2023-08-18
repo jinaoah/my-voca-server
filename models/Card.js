@@ -36,9 +36,8 @@ Card.deleteWord = async (word) => {
 Card.getAllSen = async () => {
     try {
         const connection = await oracledb.getConnection(config);
-        const sql = `SELECT * FROM sentences`;
+        const sql = `SELECT DISTINCT SENTENCE_TEXT, sentence_meaning, sentence_id FROM sentences`;
         const result = await connection.execute(sql);
-        // console.log(result);
         return result.rows;
     } catch (err) {
         console.log('문장 데이터 가져오기 -> ', err)
@@ -85,7 +84,7 @@ Card.update = async ({word, mean, partOfSpeech, isBookmarked, isChecked, nicknam
     console.log('update 모델', result);
 }
 
-Card.updateSen = async (sentenceValues, transValues) => {
+Card.updateSen = async (sentences, translations) => {
     const connection = await oracledb.getConnection(config);
 
     const sql = `UPDATE sentences SET SENTENCE_TEXT = :SENTENCE_TEXT,
@@ -103,7 +102,7 @@ Card.getTotal = async (nickname) => {
     try {
         const connection = await oracledb.getConnection(config);
         const sql = `SELECT COUNT(word) FROM words WHERE nickname = :nickname`;
-        const result = await connection.execute(sql, nickname);
+        const result = await connection.execute(sql, [nickname]);
         return result.rows[0];
     } catch (err) {
         console.log('getTotal 모델 에러', err)
@@ -114,21 +113,23 @@ Card.getTodayTotal = async (nickname) => {
         const connection = await oracledb.getConnection(config);
         const sql = `SELECT COUNT(word) FROM words WHERE nickname = :nickname
         AND TRUNC(add_date) = TRUNC(SYSDATE)`;
-        const result = await connection.execute(sql, nickname);
+        const result = await connection.execute(sql, [nickname]);
         return result.rows[0];
     } catch (err) {
         console.log('getTotal 모델 에러', err)
     }
 }
-Card.getJoinWord = async (sentence) => {
+Card.getJoinWord = async (sentence_id) => {
     try {
-        const connection = oracledb.getConnection(config);
+        const connection = await oracledb.getConnection(config);
+        console.log('sentence_id : ', sentence_id);
         const sql = `SELECT DISTINCT w.word FROM words w
-        JOIN sentences s ON s.sentence_text LIKE '%' || w.word || '%' WHERE sentence_text = 'i am super shy'`
-        const result = (await connection).execute(sql);
-        return result;
+        JOIN sentences s ON s.sentence_text LIKE '%' || w.word || '%' WHERE sentence_id = :sentence_id`;
+        console.log('sql ->', sql);
+        const result = await connection.execute(sql, [sentence_id], {autoCommit: true});
+        return result.rows;
     } catch (err) {
-        console.log('조인 모델 실패', err)
+        throw err;
     }
 }
 module.exports = Card;

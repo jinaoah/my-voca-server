@@ -78,12 +78,13 @@ module.exports.getCnt = async(req, res) => {
 
 module.exports.getJoinWord = async(req, res) => {
     try {
-        const sentence = req.body;
-        const joinWords = await Card.getJoinWord(sentence);
-        res.send(joinWords);
-        console.log(joinWords);
+        console.log('getJoinWord 컨트롤러',req.params);
+        const sentenceID = req.params.sentenceID;
+        const joinWords = await Card.getJoinWord(sentenceID);
+        res.json(joinWords);
+        // console.log(joinWords);
     } catch (err) {
-        console.log('join 실패', err);
+        throw err
     }
 }
 
