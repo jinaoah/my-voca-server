@@ -102,7 +102,7 @@ Card.getTotal = async (nickname) => {
     try {
         const connection = await oracledb.getConnection(config);
         const sql = `SELECT COUNT(word) FROM words WHERE nickname = :nickname`;
-        const result = await connection.execute(sql, [nickname]);
+        const result = await connection.execute(sql, nickname);
         return result.rows[0];
     } catch (err) {
         console.log('getTotal 모델 에러', err)
@@ -113,7 +113,7 @@ Card.getTodayTotal = async (nickname) => {
         const connection = await oracledb.getConnection(config);
         const sql = `SELECT COUNT(word) FROM words WHERE nickname = :nickname
         AND TRUNC(add_date) = TRUNC(SYSDATE)`;
-        const result = await connection.execute(sql, [nickname]);
+        const result = await connection.execute(sql, nickname);
         return result.rows[0];
     } catch (err) {
         console.log('getTotal 모델 에러', err)
